@@ -41,11 +41,13 @@ def frame(symbol, offset=0, moving=False, flash=False):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--firmware', type=Path, default=ROOT.parent/'busy')
+    parser.add_argument('--firmware', type=Path, required=True, help='Official firmware checkout at 1.3.1-rc or newer')
     parser.add_argument('--legacy', type=Path, default=ROOT.parent/'busybar-projects-legacy')
     args = parser.parse_args()
     sys.path.insert(0, str(args.firmware/'scripts'))
-    from seq2anim import BSBAnimConverter
+    from seq2anim import BSBAnimConverter, PixelEncoding
+    if not hasattr(PixelEncoding, 'QOI_LIKE'):
+        raise SystemExit('Use the animation converter from firmware 1.3.1-rc or newer')
     dest = ROOT/'src'
     for folder in ('animations', 'sounds', 'appmeta'): (dest/folder).mkdir(parents=True, exist_ok=True)
     # Retire the seven section-based files emitted by the first generator.
