@@ -50,7 +50,7 @@ function main() {
   };
   const spin = () => {
     if (state === 'spinning') return;
-    timers.forEach(clearTimeout);
+    timers.forEach((id) => clearTimeout(id));
     timers = [];
     clearTimeout(overlayTimer);
     hideOverlay();
@@ -74,7 +74,7 @@ function main() {
     if (stopped) return;
     if (event.key === 'back' && event.action === 'short') {
       stopped = true;
-      timers.forEach(clearTimeout);
+      timers.forEach((id) => clearTimeout(id));
       clearTimeout(overlayTimer);
       display.stop();
       audioChain = audioChain.then(() => device.AudioStop()).catch((error) => { if (error.status !== 410) report(); });

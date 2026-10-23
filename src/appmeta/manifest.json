@@ -2,7 +2,7 @@
   "format_version": 1,
   "id": "app.personal.slot_machine",
   "name": "Slot Machine",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "api_version": "27.14.0",
   "description": "Three reels, seven symbols, adjustable jackpot odds and original sounds.",
   "author": "Dmitriy Rudenko",

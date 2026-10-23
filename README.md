@@ -35,7 +35,8 @@ The application uses official `@busy-app/busy-lib` 0.21.1 and `@busy-app/cli` 0.
 
 ## Verification
 
-- JavaScript type checking, official CLI packaging and five Node tests pass.
+- JavaScript type checking, official CLI packaging and six Node tests pass.
+- Runtime tests reproduce firmware timer IDs starting at zero and native cancellation semantics. Version 1.0.3 prevents HTTP cleanup from cancelling the first reel stop timer and fixes Back during a spin.
 - Tests cover all jackpot probability buckets, rejection of accidental losing triples, coalesced display requests, input deduplication, and lifecycle cleanup of the built bundle.
 - Host-JavaScript hardware smoke test on firmware 1.2.4 / API 27.5.0: animation, sequential stopping, sounds, odds screen, front/back rendering and cleanup; 15 API requests, zero errors.
 - The screenshots above are captures from the physical device, not mockups.
