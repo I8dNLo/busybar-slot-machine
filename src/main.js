@@ -79,7 +79,7 @@ function main() {
       display.stop();
       audioChain = audioChain.then(() => device.AudioStop()).catch((error) => { if (error.status !== 410) report(); });
       setTimeout(unbind, 0);
-    } else if ((event.key === 'start' || event.key === 'ok') && event.action === 'short') {
+    } else if ((event.key === 'start' || event.key === 'ok') && event.action === 'press') {
       spin();
     } else if (event.key === 'encoder' && state !== 'spinning') {
       oddsIndex = Math.max(0, Math.min(ODDS.length - 1, oddsIndex - event.delta));

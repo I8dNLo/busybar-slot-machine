@@ -8,7 +8,7 @@ A standalone JavaScript port of the native Slot Machine proposed in [busybar-fir
 
 ## Play
 
-- OK / START: spin three reels, stopping at 1050, 1500 and 1950 ms.
+- OK / START: spin immediately on button press (holding/releasing does not retrigger); three reels, stopping at 1050, 1500 and 1950 ms.
 - Encoder: adjust jackpot probability between 1/2, 1/4, 1/6, 1/8, 1/12, 1/20 and 1/50; default 1/6.
 - BACK: quit and release timers, input and audio.
 

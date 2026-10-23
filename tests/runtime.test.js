@@ -36,16 +36,26 @@ async function runtime() {
   };
 }
 
-test('packaged slot app ignores press/release duplicates, stops reels and releases lifecycle handles', async () => {
+test('packaged slot app spins on press, ignores held/release events and releases lifecycle handles', async () => {
   const app = await runtime();
   assert.deepEqual(app.errors, []);
   assert.equal(app.timers.size, 0);
   await app.event({key:'start',action:'press'});
+  assert.equal(app.timers.size, 3);
+  await app.event({key:'start',action:'short'});
+  assert.equal(app.timers.size, 3);
+  await app.event({key:'start',action:'short'});
+  assert.equal(app.timers.size, 3);
+  for(const delay of [1050,1500,1950]) await app.fire(delay);
   assert.equal(app.timers.size, 0);
-  await app.event({key:'start',action:'short'});
+  for (const action of ['long', 'repeat', 'short', 'release']) {
+    await app.event({key:'start',action});
+    assert.equal(app.timers.size, 0, `${action} must not restart a completed spin`);
+  }
+  await app.event({key:'ok',action:'press'});
   assert.equal(app.timers.size, 3);
-  await app.event({key:'start',action:'short'});
-  assert.equal(app.timers.size, 3);
+  await app.event({key:'ok',action:'short'});
+  await app.event({key:'ok',action:'release'});
   for(const delay of [1050,1500,1950]) await app.fire(delay);
   assert.equal(app.timers.size, 0);
   await app.event({key:'encoder',delta:1,action:'clockwise'});
