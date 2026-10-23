@@ -1,0 +1,58 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import { readFileSync } from 'node:fs';
+
+async function runtime() {
+  const timers = new Map(), requests = [], errors = [];
+  let seq = 0, handler;
+  const context = vm.createContext({
+    URL, URLSearchParams, Headers, Request, Response, FormData,
+    console: {log(){}, error: (...args) => errors.push(args)},
+    setTimeout(fn, delay) { timers.set(++seq, {fn, delay}); return seq; },
+    clearTimeout(id) {timers.delete(id);},
+    setInterval(fn, delay) {timers.set(++seq, {fn, delay, interval:true}); return seq;},
+    clearInterval(id) {timers.delete(id);},
+    listen(type, fn) {assert.equal(type, 'input'); assert.equal(handler, undefined); handler = fn; return () => {handler = undefined;};},
+    fetch: async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      const url = new URL(request.url);
+      const body = request.method === 'POST' ? await request.json() : null;
+      requests.push({url: url.pathname, method: request.method, body});
+      let result = {result:'OK'};
+      if (url.pathname === '/api/version') result = {api_semver:'27.12.0'};
+      return Response.json(result);
+    },
+  });
+  const drain = async () => { for(let i=0;i<10;i++) await new Promise((r) => setImmediate(r)); };
+  const code = readFileSync(new URL('../dist/app.personal.slot_machine/scripts/main.js', import.meta.url), 'utf8');
+  vm.runInContext(code, context, {timeout:1000});
+  await drain();
+  return {
+    timers, requests, errors,
+    async event(event) {handler?.(event); await drain();},
+    async fire(delay) {for (const [id,timer] of [...timers]) if(timer.delay === delay) {if(!timer.interval) timers.delete(id); timer.fn();} await drain();},
+    get attached() {return Boolean(handler);},
+  };
+}
+
+test('packaged slot app ignores press/release duplicates, stops reels and releases lifecycle handles', async () => {
+  const app = await runtime();
+  assert.deepEqual(app.errors, []);
+  assert.equal(app.timers.size, 0);
+  await app.event({key:'start',action:'press'});
+  assert.equal(app.timers.size, 0);
+  await app.event({key:'start',action:'short'});
+  assert.equal(app.timers.size, 3);
+  await app.event({key:'start',action:'short'});
+  assert.equal(app.timers.size, 3);
+  for(const delay of [1050,1500,1950]) await app.fire(delay);
+  assert.equal(app.timers.size, 0);
+  await app.event({key:'encoder',delta:1,action:'clockwise'});
+  assert.equal(app.timers.size, 1);
+  await app.event({key:'back',action:'short'});
+  await app.fire(0);
+  assert.equal(app.attached, false);
+  assert.equal(app.timers.size, 0);
+  assert.deepEqual(app.errors, []);
+});
